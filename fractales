@@ -1,0 +1,95 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def sierpinski_triangle(order):
+    def sierpinski(order, points):
+        if order == 0:
+            return [points]
+        else:
+            mid = lambda p1, p2: [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2]
+            top = points[0]
+            left = points[1]
+            right = points[2]
+            tmid = mid(top, left)
+            lmid = mid(left, right)
+            rmid = mid(right, top)
+            return (sierpinski(order-1, [top, tmid, rmid]) +
+                    sierpinski(order-1, [tmid, left, lmid]) +
+                    sierpinski(order-1, [rmid, lmid, right]))
+
+    points = [[0, 1], [-1, -1], [1, -1]]
+    triangles = sierpinski(order, points)
+    for triangle in triangles:
+        plt.fill(*zip(*triangle), 'k')
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.show()
+
+def mandelbrot_set(xmin, xmax, ymin, ymax, xn, yn, maxiter, horizon):
+    X = np.linspace(xmin, xmax, xn, dtype=np.float32)
+    Y = np.linspace(ymin, ymax, yn, dtype=np.float32)
+    C = X + Y[:, None] * 1j
+    Z = np.zeros(C.shape, dtype=np.complex64)
+    T = np.zeros(C.shape, dtype=np.float32)
+    for n in range(maxiter):
+        I = np.less(Z.real*Z.real + Z.imag*Z.imag, horizon)
+        Z[I] = Z[I]**2 + C[I]
+        T[I] = n
+    T = np.log(T + 1)  # Apply log scale for better visual representation
+    plt.imshow(T, extent=[xmin, xmax, ymin, ymax], cmap='hot')
+    plt.colorbar()
+    plt.show()
+
+def julia_set(xmin, xmax, ymin, ymax, xn, yn, maxiter, horizon, c):
+    X = np.linspace(xmin, xmax, xn, dtype=np.float32)
+    Y = np.linspace(ymin, ymax, yn, dtype=np.float32)
+    Z = X + Y[:, None] * 1j
+    T = np.zeros(Z.shape, dtype=np.float32)
+    for n in range(maxiter):
+        I = np.less(Z.real*Z.real + Z.imag*Z.imag, horizon)
+        Z[I] = Z[I]**2 + c
+        T[I] = n
+    T = np.log(T + 1)  # Apply log scale for better visual representation
+    plt.imshow(T, extent=[xmin, xmax, ymin, ymax], cmap='hot')
+    plt.colorbar()
+    plt.show()
+
+def koch_snowflake(order, scale=10):
+    def koch(order, p1, p2):
+        if order == 0:
+            return [p1, p2]
+        else:
+            dx = p2[0] - p1[0]
+            dy = p2[1] - p1[1]
+            s = np.sqrt(dx*dx + dy*dy) / 3
+            a = np.arctan2(dy, dx)
+            p3 = [p1[0] + dx / 3, p1[1] + dy / 3]
+            p5 = [p1[0] + 2 * dx / 3, p1[1] + 2 * dy / 3]
+            p4 = [p3[0] + s * np.cos(a - np.pi / 3), p3[1] + s * np.sin(a - np.pi / 3)]
+            return (koch(order-1, p1, p3) + 
+                    koch(order-1, p3, p4) +
+                    koch(order-1, p4, p5) + 
+                    koch(order-1, p5, p2))
+
+    p1 = [0, 0]
+    p2 = [scale, 0]
+    p3 = [scale/2, scale*np.sin(np.pi/3)]
+    points = koch(order, p1, p2)[:-1] + koch(order, p2, p3)[:-1] + koch(order, p3, p1)
+    points = np.array(points)
+    plt.plot(points[:,0], points[:,1], 'k')
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.show()
+
+def burning_ship(xmin, xmax, ymin, ymax, xn, yn, maxiter, horizon):
+    X = np.linspace(xmin, xmax, xn, dtype=np.float32)
+    Y = np.linspace(ymin, ymax, yn, dtype=np.float32)
+    C = X + Y[:, None] * 1j
+    Z = np.zeros(C.shape, dtype=np.complex64)
+    T = np.zeros(C.shape, dtype=np.float32)
+    for n in range(maxiter):
+        I = np.less(Z.real*Z.real + Z.imag*Z.imag, horizon)
+        Z[I] = (np.abs(Z[I].real) + 1j * np.abs(Z[I].imag))**2 + C[I]
+        T[I] = n
+    T = np.log(T + 1)  # Apply log scale for better visual representation
+    plt.imshow(T, extent=[xmin, xmax, ymin, ymax], cmap='hot')
+    plt.colorbar()
+    plt.show()
